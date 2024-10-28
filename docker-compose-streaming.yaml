@@ -1,0 +1,177 @@
+version: '3'
+
+services:
+  agg_avg_per_item_5m:
+    container_name: agg_avg_per_item_5m
+    networks:
+      - network_default
+    command:
+      - mongo.py
+      - --kafka-conf
+      - startingOffsets=earliest
+      - --json-fields-map
+      - "user_id=$.user_id"
+      - "item_id=$.item_id"
+      - "interaction_type=$.interaction_type" 
+      - --sql-file 
+      - sql_files/avg_interactions_per_item_5m.sql
+      - --writer-conf 
+      - spark.mongodb.connection.uri=mongodb://mongo_admin:mongo_password@mongo:27017 
+      - spark.mongodb.database=avrioc 
+      - spark.mongodb.collection=avg_interactions_per_item_5m
+    build:
+      context: ./aggregator
+    volumes: &vol
+      - agg-checkpoint:/tmp/checkpoint
+    environment: &env
+      - BOOTSTRAP_SERVERS=kafka:9092
+      - TOPIC=user.interactions
+      - BATCH_INTERVAL=5 seconds
+      - CHECKPOINT_DIR=/tmp/checkpoint
+      - WRITE_METHOD=complete
+  
+  agg_avg_per_item_whole:
+    environment: *env
+    build:
+      context: ./aggregator
+    networks:
+      - network_default
+    volumes: *vol
+    command:
+      - mongo.py
+      - --kafka-conf
+      - startingOffsets=earliest
+      - --json-fields-map
+      - "user_id=$.user_id"
+      - "item_id=$.item_id"
+      - "interaction_type=$.interaction_type" 
+      - --sql-file 
+      - sql_files/avg_interactions_per_item_whole.sql
+      - --writer-conf 
+      - spark.mongodb.connection.uri=mongodb://mongo_admin:mongo_password@mongo:27017 
+      - spark.mongodb.database=avrioc 
+      - spark.mongodb.collection=avg_interactions_per_item_whole
+    container_name: agg_avg_per_item_whole
+
+  agg_avg_per_user_5m:
+    environment: *env
+    build:
+      context: ./aggregator
+    networks:
+      - network_default
+    volumes: *vol
+    command:
+      - mongo.py
+      - --kafka-conf
+      - startingOffsets=earliest
+      - --json-fields-map
+      - "user_id=$.user_id"
+      - "item_id=$.item_id"
+      - "interaction_type=$.interaction_type" 
+      - --sql-file 
+      - sql_files/avg_interactions_per_user_5m.sql
+      - --writer-conf 
+      - spark.mongodb.connection.uri=mongodb://mongo_admin:mongo_password@mongo:27017 
+      - spark.mongodb.database=avrioc 
+      - spark.mongodb.collection=avg_interactions_per_user_5m
+    container_name: agg_avg_per_user_5m
+  
+  agg_avg_per_user_whole:
+    environment: *env
+    build:
+      context: ./aggregator
+    networks:
+      - network_default
+    volumes: *vol
+    command:
+      - mongo.py
+      - --kafka-conf
+      - startingOffsets=earliest
+      - --json-fields-map
+      - "user_id=$.user_id"
+      - "item_id=$.item_id"
+      - "interaction_type=$.interaction_type" 
+      - --sql-file 
+      - sql_files/avg_interactions_per_user_whole.sql
+      - --writer-conf 
+      - spark.mongodb.connection.uri=mongodb://mongo_admin:mongo_password@mongo:27017 
+      - spark.mongodb.database=avrioc 
+      - spark.mongodb.collection=avg_interactions_per_user_whole
+    container_name: agg_avg_per_user_whole
+  
+  agg_interactions_per_item_5m:
+    environment: *env
+    build:
+      context: ./aggregator
+    networks:
+      - network_default
+    volumes: *vol
+    command:
+      - mongo.py
+      - --kafka-conf
+      - startingOffsets=earliest
+      - --json-fields-map
+      - "user_id=$.user_id"
+      - "item_id=$.item_id"
+      - "interaction_type=$.interaction_type" 
+      - --sql-file 
+      - sql_files/interactions_per_item_5m.sql
+      - --writer-conf 
+      - spark.mongodb.connection.uri=mongodb://mongo_admin:mongo_password@mongo:27017 
+      - spark.mongodb.database=avrioc 
+      - spark.mongodb.collection=interactions_per_item_5m
+    container_name: agg_interactions_per_item_5m
+  
+  agg_interactions_per_user_5m:
+    environment: *env
+    build:
+      context: ./aggregator
+    networks:
+      - network_default
+    volumes: *vol
+    command:
+      - mongo.py
+      - --kafka-conf
+      - startingOffsets=earliest
+      - --json-fields-map
+      - "user_id=$.user_id"
+      - "item_id=$.item_id"
+      - "interaction_type=$.interaction_type" 
+      - --sql-file 
+      - sql_files/interactions_per_user_5m.sql
+      - --writer-conf 
+      - spark.mongodb.connection.uri=mongodb://mongo_admin:mongo_password@mongo:27017 
+      - spark.mongodb.database=avrioc 
+      - spark.mongodb.collection=interactions_per_user_5m
+    container_name: agg_interactions_per_user_5m
+  
+  agg_max_min_per_item:
+    environment: *env
+    build:
+      context: ./aggregator
+    networks:
+      - network_default
+    volumes: *vol
+    command:
+      - mongo.py
+      - --kafka-conf
+      - startingOffsets=earliest
+      - --json-fields-map
+      - "user_id=$.user_id"
+      - "item_id=$.item_id"
+      - "interaction_type=$.interaction_type" 
+      - --sql-file 
+      - sql_files/max_min_per_item.sql
+      - --writer-conf 
+      - spark.mongodb.connection.uri=mongodb://mongo_admin:mongo_password@mongo:27017 
+      - spark.mongodb.database=avrioc 
+      - spark.mongodb.collection=max_min_per_item
+    container_name: agg_max_min_per_item
+
+volumes:
+  agg-checkpoint:
+  ivy-cache:
+
+networks:
+  network_default:
+    driver: bridge

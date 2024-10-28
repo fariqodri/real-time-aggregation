@@ -1,0 +1,23 @@
+# Python
+*.pyc
+__pycache__/
+venv/
+*.egg-info/
+dist/
+build/
+
+# PySpark
+*.log
+*.out
+*.err
+*.pid
+metastore_db/
+derby.log
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini

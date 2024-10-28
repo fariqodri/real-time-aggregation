@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  generator:
+    build:
+      context: ./generator
+    container_name: generator
+    networks:
+      - network_default
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      BOOTSTRAP_SERVERS: kafka:9092
+      TOPIC: user.interactions
+      DATA_COUNT: 1000000
+      BATCH_SIZE: 100000
+      INTERVAL_SECONDS: 5
+      MAX_USER_ID: 500
+      MAX_ITEM_ID: 10
+  
+  visualization:
+    build:
+      context: ./visualization
+    container_name: visualization
+    networks:
+      - network_default
+    ports:
+      - "8501:8501"
+    depends_on:
+      - mongo
+    environment:
+      MONGO_URI: mongodb://mongo_admin:mongo_password@mongo:27017
+      DATABASE: avrioc
+
+networks:
+  network_default:
+    driver: bridge
